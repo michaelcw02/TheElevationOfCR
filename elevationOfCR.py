@@ -1,36 +1,17 @@
-import shapefile
 import numpy as np
 import matplotlib.pyplot as plt
+import geopandas as gpd
 
-sf = shapefile.Reader('data/limite_cantonal/limite_cantonal_5000')    
-print('number of shapes imported:',len(sf.shapes()))
+fp = "data/limite_cantonal/limite_cantonal.shp"
+data = gpd.read_file(fp)
 
-for shape in list(sf.iterShapes()):
-    payload = ''
-    npoints=len(shape.points) # total points
-    nparts = len(shape.parts) # total parts
-    print(f'A shape has: {npoints} npoints and with {nparts} nparts')
-    if nparts == 1:
-        x_lon = np.zeros((len(shape.points),1))
-        y_lat = np.zeros((len(shape.points),1))
-        for ip in range(len(shape.points)):
-            x_lon[ip] = shape.points[ip][0]
-            y_lat[ip] = shape.points[ip][1]
-            payload = f'{payload}|{x_lon[ip]},{y_lat[ip]}' 
-    else: # loop over parts of each shape, plot separately
-        for ip in range(nparts): # loop over parts, plot separately
-            i0=shape.parts[ip]
-            if ip < nparts-1:
-                i1 = shape.parts[ip+1]-1
-            else:
-                i1 = npoints
-            seg=shape.points[i0:i1+1]
-            x_lon = np.zeros((len(seg),1))
-            y_lat = np.zeros((len(seg),1))
-            for ip in range(len(seg)):
-                x_lon[ip] = seg[ip][0]
-                y_lat[ip] = seg[ip][1]
-                payload = f'{payload}|{x_lon[ip]},{y_lat[ip]}'  
-    payload = payload.replace('[', '')
-    payload = payload.replace(']', '')
-    print(payload)
+#data.crs = {'init': 'epsg:5367'}
+data = data.to_crs({'init': 'epsg:4326'})
+
+#fig, ax = plt.subplots(figsize=(15, 15))
+#data.plot(ax=ax)
+
+
+data.plot()
+
+plt.show()
